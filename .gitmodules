@@ -1,0 +1,3 @@
+[submodule "sedutil"]
+	path = sedutil
+	url = git@github.com:badicsalex/sedutil.git
