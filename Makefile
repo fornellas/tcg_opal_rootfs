@@ -1,5 +1,5 @@
 PREFIX ?=
-PREFIX_INITRAMFS_TOOLS ?= /usr/share
+PREFIX_INITRAMFS_TOOLS ?= /etc
 
 .PHONY: all
 all:
