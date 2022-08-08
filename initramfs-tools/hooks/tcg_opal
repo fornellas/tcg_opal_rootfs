@@ -18,3 +18,8 @@ esac
 
 copy_exec /lib/cryptsetup/askpass
 copy_exec /sbin/sedutil-cli.badicsalex
+copy_exec /usr/bin/find
+copy_exec /usr/bin/gawk
+copy_exec /usr/bin/grep
+copy_exec /usr/bin/readlink
+copy_exec /usr/bin/xargs

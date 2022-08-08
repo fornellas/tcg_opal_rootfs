@@ -1,0 +1,73 @@
+#!/bin/sh
+PREREQ="udev"
+
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+# . /scripts/functions
+
+SEDUTIL="sedutil-cli.badicsalex"
+
+list_block_devices()
+{
+	# wait_for_udev 10
+	/usr/bin/find /dev/disk/by-path ! -type d | /usr/bin/xargs -n 1 readlink -f
+	if [ $? != 0 ] ; then
+		panic "Unable to list block devices"
+	fi
+}
+
+is_opal_drive()
+{
+	"$SEDUTIL" --query "$1" > /dev/null 2> /dev/null
+	return $?
+}
+
+is_opal_locked()
+{
+	"$SEDUTIL" --query "$1" 2> /dev/null | grep -q "Locked = Y"
+	return $?
+}
+
+get_block_device_info()
+{
+	"$SEDUTIL" --query "$1" | gawk '/^\//{print;exit}'
+	if [ $? != 0 ] ; then
+		panic "Unable to query $1"
+	fi
+}
+
+opal_unlock()
+{
+	while true ; do
+		pass="$(/lib/cryptsetup/askpass "Password for $2")"
+		"$SEDUTIL" --setlockingrange 1 rw "$pass" "$1"
+		if [ $? != 0 ] ; then
+			continue
+		fi
+		"$SEDUTIL" --prepareForS3Sleep 1 "$pass" "$1"
+		if [ $? != 0 ] ; then
+			panic "prepare for S3 failed for $1"
+		fi
+		break
+	done
+}
+
+for block_device in $(list_block_devices) ; do
+	if ! is_opal_drive "$block_device" ; then
+		continue
+	fi
+	if ! is_opal_locked "$block_device" ; then
+		continue
+	fi
+	opal_unlock "$block_device" "$(get_block_device_info $block_device)"
+done
