@@ -16,8 +16,8 @@ esac
 
 . /usr/share/initramfs-tools/hook-functions
 
-copy_exec /lib/cryptsetup/askpass
 copy_exec /sbin/sedutil-cli.badicsalex
+copy_exec /usr/bin/clear
 copy_exec /usr/bin/find
 copy_exec /usr/bin/gawk
 copy_exec /usr/bin/grep

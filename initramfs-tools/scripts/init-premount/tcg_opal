@@ -1,5 +1,5 @@
 #!/bin/sh
-PREREQ="plymouth"
+PREREQ=""
 
 prereqs()
 {
@@ -13,13 +13,13 @@ prereqs)
 	;;
 esac
 
-# . /scripts/functions
+. /scripts/functions
 
 SEDUTIL="sedutil-cli.badicsalex"
 
 list_block_devices()
 {
-	# wait_for_udev 10
+	wait_for_udev 10
 	/usr/bin/find /dev/disk/by-path ! -type d | /usr/bin/xargs -n 1 readlink -f
 	if [ $? != 0 ] ; then
 		panic "Unable to list block devices"
@@ -49,7 +49,9 @@ get_block_device_info()
 opal_unlock()
 {
 	while true ; do
-		pass="$(/lib/cryptsetup/askpass "Password for $2")"
+		/usr/bin/clear
+		echo -n "Password for $2: "
+		read pass
 		"$SEDUTIL" --setlockingrange 1 rw "$pass" "$1"
 		if [ $? != 0 ] ; then
 			continue
@@ -71,5 +73,7 @@ for block_device in $(list_block_devices) ; do
 	fi
 	opal_unlock "$block_device" "$(get_block_device_info $block_device)"
 done
+
+/usr/bin/clear
 
 /usr/sbin/partprobe
