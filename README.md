@@ -85,7 +85,7 @@ Proceed with OS installation as usual. Make sure to tell it to use the created p
 
 ## First boot: Setup `initramfs-tools`
 
-This step install `sedutil` & setup `initramfs-tools` to ask for the password for the drive if it is locked on boot (eg: after a cold boot):
+This step install `sedutil` & setup `initramfs-tools` to ask for the password for the drive if it is locked on boot (eg: after a cold boot). The drive will be unlocked to enable the boot to proceed, and the kernel will be instructed to keep the password in memory to enable the system to wake up from S3 sleep (as the drive will be locked).
 
 ```shell
 sudo apt install git automake make build-essential g++
