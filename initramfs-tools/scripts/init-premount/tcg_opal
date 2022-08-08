@@ -71,3 +71,5 @@ for block_device in $(list_block_devices) ; do
 	fi
 	opal_unlock "$block_device" "$(get_block_device_info $block_device)"
 done
+
+/usr/sbin/partprobe
