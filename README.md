@@ -148,6 +148,7 @@ sedutil-cli --setlockingrange 1 rw $PASS $DEVICE
 ## Caveats
 
 - There's technically a race condition with initramfs-tools. `init-premount/` is run immediately after all modules (including block device) are loaded. This means, that OPAL drive unlock should be the first thing to run, to prevent other scripts that depend on block devices to fail, eg, lvm2. With current initramfs-tools, which only accepts prereqs, the only possible fix to this would be to patch **all** scripts (eg: lvm2) so they depend on the drive unlock script (impractical). An alternative would for another step prior to `init-premount/` to run drive unlocks.
+  - As a side-effect of this race condition, some I/O errors may happen. In the worst case, for example, these errors come from lvm as it `vgscan`, which may break other steps, breaking the boot.
 
 ## References
 
