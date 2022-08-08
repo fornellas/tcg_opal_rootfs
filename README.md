@@ -99,7 +99,6 @@ git submodule init
 git submodule update
 make
 sudo make install
-update-initramfs -k all -u
 ```
 
 Note: sedutil will be installed to `/sbin/sedutil-cli.badicsalex` deliberately, so it is clear this is a fork from the original!

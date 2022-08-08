@@ -51,6 +51,7 @@ clean:
 install-initramfs-tools:
 	install -m 755 initramfs-tools/hooks/tcg_opal $(PREFIX_INITRAMFS_TOOLS)/initramfs-tools/hooks/tcg_opal
 	install -m 755 initramfs-tools/scripts/init-premount/tcg_opal $(PREFIX_INITRAMFS_TOOLS)/initramfs-tools/scripts/init-premount/tcg_opal
+	update-initramfs -k all -u
 install: install-initramfs-tools
 
 .PHONY: uninstall-initramfs-tools
