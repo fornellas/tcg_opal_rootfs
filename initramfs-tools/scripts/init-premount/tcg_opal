@@ -1,5 +1,5 @@
 #!/bin/sh
-PREREQ="udev"
+PREREQ="plymouth"
 
 prereqs()
 {
