@@ -1,3 +1,3 @@
 [submodule "sedutil"]
 	path = sedutil
-	url = https://github.com/badicsalex/sedutil
+	url = https://github.com/badicsalex/sedutil.git
