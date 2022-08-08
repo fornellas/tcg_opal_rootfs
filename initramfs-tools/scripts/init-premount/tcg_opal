@@ -50,8 +50,10 @@ opal_unlock()
 {
 	while true ; do
 		/usr/bin/clear
+		/usr/bin/stty -echo
 		echo -n "Password for $2: "
 		read pass
+		/usr/bin/stty echo
 		"$SEDUTIL" --setlockingrange 1 rw "$pass" "$1"
 		if [ $? != 0 ] ; then
 			continue
