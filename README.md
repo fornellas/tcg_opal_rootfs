@@ -30,9 +30,13 @@ This example setup was successfully tested with Linux Mint 20.3 (Ubuntu Focal 20
 
 **Make sure to have backups of your data before attempting any of this.**
 
+## Boot the installation media
+
+From the live OS, we'll prepare the drive for encryption and partition it, so installation can go on top.
+
 ## Compile `sedutil`
 
-You will require `sedutil-cli` for the setup. This should be done directly from OS live installation media:
+You will require `sedutil-cli` for the setup.
 
 ```shell
 sudo apt install git automake make build-essential g++
@@ -57,7 +61,7 @@ sedutil-cli --setMBREnable off $PASS $DEVICE
 
 ## Partition
 
-Partition using GPT:
+Partition using GPT (eg: with GParted):
 
 - 1: 100M, FAT32, EFI
 - 2: 512M, ext4, /boot
@@ -95,7 +99,7 @@ git submodule init
 git submodule update
 make
 sudo make install
-update-initramfs -k all -u -v
+update-initramfs -k all -u
 ```
 
 Note: sedutil will be installed to `/sbin/sedutil-cli.badicsalex` deliberately, so it is clear this is a fork from the original!
