@@ -135,6 +135,12 @@ Unlock drive manually (eg: from a recovery system):
 sedutil-cli --setlockingrange 1 rw $PASS $DEVICE
 ```
 
+## Improvements
+
+- Set EFI & `/boot` partitions to read only as well and have initrd set it to RW (for some extra security).
+- Integrate with Plymouth to ask for password.
+  - This was attempted with `/lib/cryptsetup/askpass`, but it seems plymouth is not fully functional during `init-premount/` (no frame buffer yet?), so not sure if possible.
+
 ## Dependencies
 
 - sedutil: for setting up drives. [Upstream](https://github.com/Drive-Trust-Alliance/sedutil) is still pending merging [S3 sleep support](https://github.com/Drive-Trust-Alliance/sedutil/pull/190), so we require [badicsalex's s3-sleep-support branch](https://github.com/badicsalex/sedutil/tree/s3-sleep-support).
