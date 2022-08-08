@@ -2,9 +2,31 @@
 
 Support for using [self-encrypting drives (SED)](https://en.wikipedia.org/wiki/Hardware-based_full_disk_encryption) which follow [TCG OPAL specification ](https://trustedcomputinggroup.org/resource/storage-work-group-storage-security-subsystem-class-opal/) to encrypt the root filesystem of Debian / Ubuntu Linux systems.
 
-## Example Setup
+Why SED instead of `cryptsetup`?
 
-This setup was successfully tested with Linux Mint 20.3 (Ubuntu Focal 20.04 LTS) though it should work at other Debian / Ubuntu variants.
+- No performance penalty, as encryption is handled by the drive.
+- No CPU usage on I/O, translating to battery savings.
+- No CPU performance bottleneck (if your drive is faster than your CPU encryption speed).
+
+Why `cryptsetup` instead of SED?
+
+- Simpler setup.
+- Not vulnerable to any potential drive firmware security issues.
+
+Why this instead of [OPAL MBR Shadow with linuxpba](https://github.com/Drive-Trust-Alliance/sedutil/wiki/Encrypting-your-drive)?
+
+- No need for "double boot" the machine (one to enter the password, another for the real OS boot).
+- Faster boots.
+- Arguably easier setup.
+- linuxpba image does not receive any (security) updates.
+
+Why use linuxpba instead of this?
+
+- Works for any operating system, including dual boot.
+
+## Cookbook
+
+This example setup was successfully tested with Linux Mint 20.3 (Ubuntu Focal 20.04 LTS) though it should work at other Debian / Ubuntu variants.
 
 **Make sure to have backups of your data before attempting any of this.**
 
