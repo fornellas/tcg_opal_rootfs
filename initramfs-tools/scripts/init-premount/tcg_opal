@@ -20,7 +20,7 @@ SEDUTIL="sedutil-cli.badicsalex"
 list_block_devices()
 {
 	wait_for_udev 10
-	/usr/bin/find /dev/disk/by-path ! -type d | /usr/bin/xargs -n 1 readlink -f
+	/usr/bin/find /dev/ -name 'sd[a-z]' -or -name 'nvme[0-9]n[0-9]' -or -name 'nvme[0-9][0-9]n[0-9][0-9]'
 	if [ $? != 0 ] ; then
 		panic "Unable to list block devices"
 	fi
