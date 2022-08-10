@@ -50,21 +50,24 @@ opal_unlock()
 {
 	while true ; do
 		/usr/bin/stty -echo
-		echo -n "Password for $2: "
+		echo -n "Password for $1 ($2): "
 		read pass
 		/usr/bin/stty echo
 		"$SEDUTIL" --setlockingrange 1 rw "$pass" "$1"
 		if [ $? != 0 ] ; then
+			log_failure_msg "Failed to unlock $1 ($2)!"
 			continue
 		fi
 		"$SEDUTIL" --prepareForS3Sleep 1 "$pass" "$1"
 		if [ $? != 0 ] ; then
 			panic "prepare for S3 failed for $1"
 		fi
+		log_success_msg "Unlocked $1 ($2)!"
 		break
 	done
 }
 
+log_begin_msg "OPAL Drives Unlock"
 for block_device in $(list_block_devices) ; do
 	if ! is_opal_drive "$block_device" ; then
 		continue
@@ -74,5 +77,6 @@ for block_device in $(list_block_devices) ; do
 	fi
 	opal_unlock "$block_device" "$(get_block_device_info $block_device)"
 done
+log_end_msg
 
 /usr/sbin/partprobe
