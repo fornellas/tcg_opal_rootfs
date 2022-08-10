@@ -49,7 +49,6 @@ get_block_device_info()
 opal_unlock()
 {
 	while true ; do
-		/usr/bin/clear
 		/usr/bin/stty -echo
 		echo -n "Password for $2: "
 		read pass
@@ -75,7 +74,5 @@ for block_device in $(list_block_devices) ; do
 	fi
 	opal_unlock "$block_device" "$(get_block_device_info $block_device)"
 done
-
-/usr/bin/clear
 
 /usr/sbin/partprobe
