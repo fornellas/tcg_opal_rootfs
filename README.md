@@ -103,6 +103,31 @@ sudo make install
 
 Note: sedutil will be installed to `/sbin/sedutil-cli.badicsalex` deliberately, so it is clear this is a fork from the original!
 
+## Optional: suppress expected kernel console error messages
+
+When the system boots with a locked drive, the kernel will try probing for partitions, yielding to errors such as these being printed to the console:
+
+```
+[    1.804421] blk_update_request: critical medium error, dev nvme0n1, sector 1953522080 op 0x0:(READ) flags 0x80700 phys_seg 1 prio class 0
+```
+
+These are 100% benign and expected, as the probing happens before the drive can be unlocked, unconditionally.
+
+If you find those annoying, you can tell the kernel to quit printing error messages to the console by creating the file `/etc/default/grub.d/99_loglevel_crit.cfg` with the contents:
+
+```shell
+#! /bin/sh
+set -e
+
+GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT loglevel=2"
+```
+
+and then running
+
+```shell
+update-grub
+```
+
 ## Voilà
 
 At this point, your system should be fully functional:
