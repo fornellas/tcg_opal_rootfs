@@ -34,12 +34,6 @@ is_opal_drive()
 	return $?
 }
 
-is_opal_locked()
-{
-	"$SEDUTIL" --query "$1" 2> /dev/null | grep -q "Locked = Y"
-	return $?
-}
-
 get_block_device_info()
 {
 	"$SEDUTIL" --query "$1" | gawk '/^\//{print;exit}'
@@ -72,9 +66,6 @@ opal_unlock()
 log_begin_msg "OPAL Drives Unlock"
 for block_device in $(list_block_devices) ; do
 	if ! is_opal_drive "$block_device" ; then
-		continue
-	fi
-	if ! is_opal_locked "$block_device" ; then
 		continue
 	fi
 	opal_unlock "$block_device" "$(get_block_device_info $block_device)"
