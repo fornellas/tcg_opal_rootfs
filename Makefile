@@ -60,3 +60,19 @@ uninstall-initramfs-tools:
 		$(PREFIX_INITRAMFS_TOOLS)/initramfs-tools/hooks/tcg_opal \
 		$(PREFIX_INITRAMFS_TOOLS)/initramfs-tools/scripts/init-premount/tcg_opal
 uninstall: uninstall-initramfs-tools
+
+##
+## grub
+##
+
+.PHONY: install-grub-tools
+install-grub-tools:
+	install -m 644 etc/default/grub.d/99_loglevel_crit.cfg $(PREFIX)/etc/default/grub.d/99_loglevel_crit.cfg
+	update-grub
+install: install-grub-tools
+
+.PHONY: uninstall-grub-tools
+uninstall-grub-tools:
+	rm -f \
+		$(PREFIX_INITRAMFS_TOOLS)/etc/default/grub.d/99_loglevel_crit.cfg
+uninstall: uninstall-grub-tools
