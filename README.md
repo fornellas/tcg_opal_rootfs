@@ -139,6 +139,7 @@ sedutil-cli --setlockingrange 1 rw $PASS $DEVICE
 - Set EFI & `/boot` partitions to read only as well and have initrd set it to RW (for some extra security).
 - Integrate with Plymouth to ask for password.
   - This was attempted with `/lib/cryptsetup/askpass`, but it seems plymouth is not fully functional during `init-premount/` (no frame buffer yet?), so not sure if possible.
+- Hibernation is more secure than sleep, as it powers off the drive locking the data. As such, no password hash needs to be stored, and also a reboot exploit is not possible. Since the data is already encrypted, the best setup is to simply use a swap file in the root partition.
 
 ## Dependencies
 
