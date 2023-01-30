@@ -111,6 +111,16 @@ At this point, your system should be fully functional:
 - As EFI and `/boot` are NOT locked, the system can still boot.
 - On boot, initrd will ask for password to unlock the drive if it is locked.
 
+## Encrypt an existing install
+** WARNING: Possible data loss! **
+
+If you are already on a system with an EFI, /boot, and a separate root partition, you should be able to encrypt it without reinstalling. 
+
+- Boot from a live USB
+- `chroot` into the system
+- follow instructions above excluding `yesIreallywanttoERASEALLmydatausingthePSID`
+
+
 ## Operational Commands
 
 Change password:
