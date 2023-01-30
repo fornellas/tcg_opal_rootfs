@@ -154,6 +154,8 @@ sedutil-cli --setlockingrange 1 rw $PASS $DEVICE
 - When initrd runs and load block device drivers, the kernel will try probing the locked partitions yielding to benign errors such as `[    1.804421] blk_update_request: critical medium error, dev nvme0n1, sector 1953522080 op 0x0:(READ) flags 0x80700 phys_seg 1 prio class 0`. Soon after, the drive will be unlocked, and no more errors are expected.
   - To counter that, the kernel log level is set to critical via `/etc/default/grub.d/99_loglevel_crit.cfg`. If you don't like that, you can remove this file.
 
+- Reboot is exploitable. On boot we unlock the drive via `sedutil-cli --setlockingrange 1 rw`, which persists until the drive loses power. Thus, rebooting into a different system, including a live usb, leaves the data exposed.
+
 ## References
 
 -	[A Practical Guide to Use of Opal Drives](https://develop.trustedcomputinggroup.org/2019/05/28/a-practical-guide-to-use-of-opal-drives/).
