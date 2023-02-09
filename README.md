@@ -91,7 +91,10 @@ IMPORTANT: any changes to this locking range will crypto-erase the whole range. 
 
 ## Install OS
 
-Proceed with OS installation as usual. **Make sure to tell it to use the created partitions**.
+Proceed with OS installation:
+
+- Make **sure** to tell it to use the created partitions, do **not** alter the partitions.
+- Make **sure** to ask the installer to format the partitions within the locking range (`/`, swap), as their contents were erased when the locking range was setup.
 
 **IMPORTANT:** Do **NOT** poweroff the system after installation is finished. If you do so, the drive will be locked and you won't be able to boot! Simply reboot the system for first boot without powering it off.
 
