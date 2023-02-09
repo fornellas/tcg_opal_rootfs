@@ -64,26 +64,34 @@ sedutil-cli --setMBREnable off $PASS $DEVICE
 Partition using GPT (eg: with GParted):
 
 - 1: 100M, FAT32, EFI
-- 2: 512M, ext4, /boot
-- 3: Rest of the disk, ext4, /
+- 2: 2G, ext4, `/boot`[^1]
+- 3: ext4, `/`
+- 4: Swap[^2]
 
-Use `fdisk -l $DEVICE` to get for partition 3:
-
-- RANGE_START=Start
-- RANGE_LENGTH=Sectors
+[^1]: Size this partition to be able to hold all your kernels.
+[^2]: Size this to at least the size of your RAM if you would like to hibernate your system.
 
 ## Setup locking range for root filesystem
 
-Setup a locking range **only** for the `/` filesystem:
+Use `fdisk -l $DEVICE` and calculate:
+
+- RANGE_START=("Start" from partition 3).
+- RANGE_LENGTH=("Sectors" from partition 3 + "Sectors" from partition 4).
+
+This range will cover the whole drive, with the exception of EFI and `/boot` partitions which sit at the beginning.
+
+Create the locking range:
 
 ```shell
 sedutil-cli --setupLockingRange 1 $RANGE_START $RANGE_LENGTH $PASS $DEVICE
 sedutil-cli --enablelockingrange 1 $PASS $DEVICE
 ```
 
+IMPORTANT: any changes to this locking range will crypto-erase the whole range. This means that, you're free to change any partitions inside the locking range, everything will still work, but changes to EFI / `/boot` (eg: growing its size) will not be possible (as they'd grow into the locking range).
+
 ## Install OS
 
-Proceed with OS installation as usual. Make sure to tell it to use the created partitions.
+Proceed with OS installation as usual. **Make sure to tell it to use the created partitions**.
 
 **IMPORTANT:** Do **NOT** poweroff the system after installation is finished. If you do so, the drive will be locked and you won't be able to boot! Simply reboot the system for first boot without powering it off.
 
@@ -110,16 +118,6 @@ At this point, your system should be fully functional:
 - Every time the drive looses power, the root filesystem will be locked.
 - As EFI and `/boot` are NOT locked, the system can still boot.
 - On boot, initrd will ask for password to unlock the drive if it is locked.
-
-## Encrypt an existing install
-** WARNING: Possible data loss! **
-
-If you are already on a system with an EFI, /boot, and a separate root partition, you should be able to encrypt it without reinstalling. 
-
-- Boot from a live USB
-- `chroot` into the system
-- follow instructions above excluding `yesIreallywanttoERASEALLmydatausingthePSID`
-
 
 ## Operational Commands
 
