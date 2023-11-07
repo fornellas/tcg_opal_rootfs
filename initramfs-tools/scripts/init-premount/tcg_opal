@@ -95,7 +95,6 @@ opal_unlock_all_ranges()
 opal_unlock()
 {
 	local device
-        local unlock_result
 	device="$1"
 	while true ; do
 		if [ -z "$pass" ]; then
