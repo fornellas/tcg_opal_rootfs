@@ -28,10 +28,17 @@ list_block_devices()
 	fi
 }
 
-is_opal_drive()
+opal_drive_locked_status()
 {
-	"$SEDUTIL" --query "$1" > /dev/null 2> /dev/null
-	return $?
+	"$SEDUTIL" --query "$1" 2> /dev/null | gawk 'match($0, /LockingEnabled = (Y|N)/, cap) { print cap[1] }'
+}
+
+is_locked_opal_drive()
+{
+	if [ "$(opal_drive_locked_status $1)" = "Y" ]; then
+		return 0
+	fi
+	return 1
 }
 
 get_block_device_info()
@@ -42,21 +49,78 @@ get_block_device_info()
 	fi
 }
 
-opal_unlock()
+opal_unlock_all_ranges()
 {
-	while true ; do
-		/usr/bin/stty -echo
-		echo -n "Password for $2 ($1): "
-		read pass
-		/usr/bin/stty echo
-		"$SEDUTIL" --setlockingrange 1 rw "$pass" "$1"
-		if [ $? != 0 ] ; then
-			log_failure_msg "Failed to unlock!"
+	local device
+        local pass
+	local tmpfile
+	local list_out
+	device="$1"
+	pass="$2"
+	tmpfile=/tmp/sedutil-listlockingranges
+	# Collect a list of WLocked values for each locking range
+	"$SEDUTIL" --listLockingRanges "$pass" "$device" | gawk 'match($0, /RLKEna = [YN]  WLKEna = (Y|N)  RLocked = [YN]  WLocked = (Y|N)/, cap) { print cap[1], cap[2] }' > $tmpfile
+
+	list_out="$(cat $tmpfile)"
+	if [ -z "$list_out" ]; then
+		# file is empty means sedutil failed
+		rm -f $tmpfile
+		return 1
+	fi
+	
+	local current_range
+	local failure
+	local wlocked
+	current_range=-1
+	failure=""
+	# unlock each range that has "WLocked = Y"
+	while read wlkena wlocked; do
+		current_range=$((current_range + 1))
+		if [ "$wlkena" = "N" ]; then
+			# write lock not enabled, ignore this locking range
 			continue
 		fi
-		"$SEDUTIL" --prepareForS3Sleep 1 "$pass" "$1"
-		if [ $? != 0 ] ; then
-			panic "prepare for S3 failed for $1"
+		if [ "$wlocked" = "Y" ]; then
+			# write lock enabled and locked
+			if ! "$SEDUTIL" --setlockingrange $current_range rw "$pass" "$device" > /dev/null 2> /dev/null; then
+				failure="unexpected: unlocking failed for $device"
+				break
+			fi
+		fi
+		# always invoke prepareForS3Sleep even if the device is not locked (reboot).
+		# this is necessary to store the password in kernel memory and
+		# allow wake from sleep
+		if ! "$SEDUTIL" --prepareForS3Sleep $current_range "$pass" "$device"; then
+			failure="unexpected: prepare for S3 failed for $device"
+			break
+		fi
+	done < $tmpfile
+	rm -f $tmpfile
+	if [ -n "$failure"  ] ; then
+		panic "$failure"
+	fi
+}
+
+opal_unlock()
+{
+	local device
+	device="$1"
+	while true ; do
+		if [ -z "$pass" ]; then
+			# Only ask if "pass" is not set. This allows the
+			# user to define the same password for multiple drives
+			# and only be prompted once.
+			echo
+			/usr/bin/stty -echo
+			echo -n "Password for $2 ($device): "
+			read pass
+			/usr/bin/stty echo
+			echo
+		fi
+		if ! opal_unlock_all_ranges "$device" "$pass"; then
+			pass=""
+			log_failure_msg "Failed to unlock!"
+			continue
 		fi
 		log_success_msg "Unlocked!"
 		break
@@ -65,7 +129,7 @@ opal_unlock()
 
 log_begin_msg "OPAL Drives Unlock"
 for block_device in $(list_block_devices) ; do
-	if ! is_opal_drive "$block_device" ; then
+	if ! is_locked_opal_drive "$block_device" ; then
 		continue
 	fi
 	opal_unlock "$block_device" "$(get_block_device_info $block_device)"
