@@ -30,7 +30,7 @@ list_block_devices()
 
 opal_drive_locked_status()
 {
-	"$SEDUTIL" --query "$1" 2> /dev/null | gawk 'match($0, /Locked = (Y|N)/, cap) { print cap[1] }'
+	"$SEDUTIL" --query "$1" 2> /dev/null | gawk 'match($0, /LockingEnabled = (Y|N)/, cap) { print cap[1] }'
 }
 
 is_locked_opal_drive()
@@ -59,7 +59,8 @@ opal_unlock_all_ranges()
 	pass="$2"
 	tmpfile=/tmp/sedutil-listlockingranges
 	# Collect a list of WLocked values for each locking range
-	"$SEDUTIL" --listLockingRanges "$pass" "$device" | gawk 'match($0, /WLocked = (Y|N)/, cap) { print cap[1] }' > $tmpfile
+	"$SEDUTIL" --listLockingRanges "$pass" "$device" | gawk 'match($0, /RLKEna = [YN]  WLKEna = (Y|N)  RLocked = [YN]  WLocked = (Y|N)/, cap) { print cap[1], cap[2] }' > $tmpfile
+
 	list_out="$(cat $tmpfile)"
 	if [ -z "$list_out" ]; then
 		# file is empty means sedutil failed
@@ -70,21 +71,29 @@ opal_unlock_all_ranges()
 	local current_range
 	local failure
 	local wlocked
-	current_range=0
+	current_range=-1
 	failure=""
 	# unlock each range that has "WLocked = Y"
-	while read wlocked; do
+	while read wlkena wlocked; do
+		current_range=$((current_range + 1))
+		if [ "$wlkena" = "N" ]; then
+			# write lock not enabled, ignore this locking range
+			continue
+		fi
 		if [ "$wlocked" = "Y" ]; then
+			# write lock enabled and locked
 			if ! "$SEDUTIL" --setlockingrange $current_range rw "$pass" "$device" > /dev/null 2> /dev/null; then
 				failure="unexpected: unlocking failed for $device"
 				break
 			fi
-			if ! "$SEDUTIL" --prepareForS3Sleep $current_range "$pass" "$device"; then
-				failure="unexpected: prepare for S3 failed for $device"
-				break
-			fi
 		fi
-		current_range=$((current_range + 1))
+		# always invoke prepareForS3Sleep even if the device is not locked (reboot).
+		# this is necessary to store the password in kernel memory and
+		# allow wake from sleep
+		if ! "$SEDUTIL" --prepareForS3Sleep $current_range "$pass" "$device"; then
+			failure="unexpected: prepare for S3 failed for $device"
+			break
+		fi
 	done < $tmpfile
 	rm -f $tmpfile
 	if [ -n "$failure"  ] ; then
