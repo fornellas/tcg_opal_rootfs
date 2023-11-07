@@ -35,7 +35,7 @@ opal_drive_locked_status()
 
 is_locked_opal_drive()
 {
-	if [ $(opal_drive_locked_status "$1") = "Y" ]; then
+	if [ "$(opal_drive_locked_status $1)" = "Y" ]; then
 		return 0
 	fi
 	return 1
